@@ -22,6 +22,8 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.list = [None] * capacity
+        self.capacity = capacity
 
 
     def get_num_slots(self):
@@ -35,6 +37,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.list)
 
 
     def get_load_factor(self):
@@ -44,6 +47,22 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        i = 0
+        for e in self.list:
+            current = e
+            while current != None:
+                i +=1
+                current = current.next
+
+        if i/self.capacity > .7:
+            self.resize(self.capacity*2)
+        elif i/self.capacity <.2:
+            if self.capacity/2 < 8:
+                self.resize(8)
+            else:
+                self.resize(self.capacity/2)
+        return i/self.capacity
+
 
 
     def fnv1(self, key):
@@ -63,7 +82,10 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-
+        hash = 5381
+        for c in key:
+            hash = (hash * 33) + ord(c)
+        return hash
 
     def hash_index(self, key):
         """
@@ -82,6 +104,20 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if self.list[self.hash_index(key)] != None:
+            current = self.list[self.hash_index(key)]
+            while current.next != None and current.key != key:
+                current = current.next
+            if current.key == key:
+                current.value = value
+            else:
+                current.next = HashTableEntry(key,value)
+        else:
+            self.list[self.hash_index(key)] = HashTableEntry(key,value)
+
+        self.get_load_factor()
+
+        
 
 
     def delete(self, key):
@@ -93,6 +129,25 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # self.list[self.hash_index(key)] = None
+
+        previous = None
+        current = self.list[self.hash_index(key)]
+        if current != None:
+            while current.key != key and current != None:
+                previous = current
+                current = current.next
+            if current.key == key:
+                if previous != None:
+                    previous.next = current.next
+                else:
+                    self.list[self.hash_index(key)] = current.next
+            else:
+                print('Key not found')
+        else:
+            print('Key not found')
+
+        self.get_load_factor()
 
 
     def get(self, key):
@@ -105,6 +160,17 @@ class HashTable:
         """
         # Your code here
 
+        current = self.list[self.hash_index(key)]
+        if current != None:
+            while current.key != key and current.next != None:
+                current = current.next
+            if current.key == key:
+                return current.value
+            else:
+                return None
+        else:
+            return None
+
 
     def resize(self, new_capacity):
         """
@@ -114,6 +180,25 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        new_list = [None]*int(new_capacity)
+        for e in self.list:
+            current = e
+            while current != None:
+                if new_list[self.hash_index(current.key)] != None:
+                    cur = new_list[self.hash_index(current.key)]
+                    while cur.next != None and cur.key != current.key:
+                        cur = cur.next
+                    if cur.key == current.key:
+                        cur.value = current.value
+                    else:
+                        cur.next = HashTableEntry(current.key,current.value)
+                else:
+                    new_list[self.hash_index(current.key)] = HashTableEntry(current.key,current.value)
+                current = current.next
+        self.list = new_list
+
+
 
 
 
